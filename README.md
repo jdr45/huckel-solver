@@ -11,7 +11,7 @@ This program calculates and prints the Hückel energies and degeneracies of the 
 Requirements
 --
 
-Python3 with the networkx (included, since MCS Linux only has the Python2 version) and numpy libraries.
+Python3 with the networkx and numpy libraries.
 
 Usage
 --
