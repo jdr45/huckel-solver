@@ -1,8 +1,9 @@
+#!/usr/bin/env python3
+
 import numpy as np
 import networkx as nx
 import sys
 
-from decimal import Decimal
 from typing import Iterable, Tuple, List
 
 
@@ -12,7 +13,7 @@ def lin_polyene_n(n: int) -> np.ndarray:
     approximation, with alpha = 0 and beta = -1.
     """
     if n < 1:
-        raise ValueError("Linear poly-ene must have at least 1 site.")
+        raise ValueError("A linear poly-ene must have at least 1 site.")
 
     m = np.array([[-1 if i == j - 1 or i == j + 1 else 0 for i in range(n)] for j in range(n)])
 
@@ -21,35 +22,36 @@ def lin_polyene_n(n: int) -> np.ndarray:
 
 def cyc_polyene_n(n: int) -> np.ndarray:
     """
-    Returns the hamiltonian matrix for a cyclic poly-ene with n sites. This is just the same as for a linear polyene,
+    Returns the hamiltonian matrix for a cyclic poly-ene with n sites. This is just the same as for a linear poly-ene,
     except now the first and last atom are connected.
     """
-    if n < 1:
-        raise ValueError("Cyclic poly-ene must have at least 1 site.")
+    if n < 3:
+        raise ValueError("A cyclic poly-ene must have at least 3 sites.")
 
     m = lin_polyene_n(n)
     m[0][n-1] = -1
     m[n-1][0] = -1
+
     return m
 
 
 def platonic(n: int) -> np.ndarray:
     """
     Returns the hamiltonian matrix corresponding to the (sp2-hybridised) platonic solid with n vertices.
-    Possible values are n = 4, 6, 8, 12, 20.  Use the pre-defined graphs from networkx, as there is no nice way of
+    The possible values are n = 4, 6, 8, 12, 20.  Use the pre-defined graphs from networkx, as there is no nice way of
     generating them algorithmically (they are just definitions, after all).
     """
 
     if n == 4:
         g = nx.tetrahedral_graph()
     elif n == 6:
-        g = nx.cubical_graph()
-    elif n == 8:
         g = nx.octahedral_graph()
+    elif n == 8:
+        g = nx.cubical_graph()
     elif n == 12:
-        g = nx.dodecahedral_graph()
-    elif n == 20:
         g = nx.icosahedral_graph()
+    elif n == 20:
+        g = nx.dodecahedral_graph()
     else:
         raise ValueError("Unknown platonic solid")
 
@@ -78,23 +80,23 @@ def buckyball() -> np.ndarray:
              (48, 52), (49, 53), (49, 57), (50, 51), (50, 52), (51, 53),
              (54, 55), (54, 56), (55, 57), (56, 58), (57, 59), (58, 59)
              ]
+
     g = nx.Graph()
     g.add_edges_from(edges)
 
     return nx.adjacency_matrix(g).todense()
 
 
-def get_eigenvalues_with_degeneracies(evals: Iterable[float]) -> Tuple[Decimal, int]:
+def get_eigenvalues_with_degeneracies(evals: Iterable[float]) -> List[Tuple[float, int]]:
     """
     Given a set of sorted eigenvalues (possibly including degenerate eigenvalues), return a list of
-    (eigenvalue, degeneracy) pairs, with eigenvalues represented as decimals rounded to 3dp.
+    (eigenvalue, degeneracy) pairs, with eigenvalues represented as floats rounded to 3dp.
     """
     cur = None
     count = 0
     result = []
 
     for e in evals:
-        e = Decimal(e)
         e = round(e, 3)
 
         if e == cur:
@@ -111,7 +113,7 @@ def get_eigenvalues_with_degeneracies(evals: Iterable[float]) -> Tuple[Decimal, 
     return result
 
 
-def print_eigenvalues(evals: List[Tuple[Decimal, int]]) -> None:
+def print_eigenvalues(evals: List[Tuple[float, int]]) -> None:
     """
     Format and print a sorted (in ascending order of eigenvalue) list of (eigenvalue, degeneracy) pairs as an
     energy-level diagram.
@@ -135,12 +137,15 @@ def print_eigenvalues(evals: List[Tuple[Decimal, int]]) -> None:
         print(line)
         print()
 
-    print("%d orbitals." % count)
+    if count == 1:
+        print("1 orbital.")
+    else:
+        print("%d orbitals." % count)
 
 
 def print_usage() -> None:
-    print("usage: huckel.py [-l | --linear-polyene] num\n"
-          "       huckel.py [-c | --cyclic-polyene] num\n"
+    print("usage: huckel.py [-l | --linear-polyene] num-sites\n"
+          "       huckel.py [-c | --cyclic-polyene] num-sites\n"
           "       huckel.py [-p | --platonic] [4 | 6 | 8 | 12 | 20]\n"
           "       huckel.py [-b | --buckyball]")
 
@@ -161,7 +166,7 @@ def main() -> None:
     if sys.argv[1] in arguments.keys():
         try:
             matrix = arguments.get(sys.argv[1])(int(sys.argv[2]))
-        except (IndexError, ValueError) as e:
+        except (IndexError, ValueError):
             print_usage()
             return
     elif sys.argv[1] == '-b' or sys.argv[1] == '--buckyball':
