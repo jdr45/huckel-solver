@@ -163,7 +163,7 @@ def main() -> None:
         '-p': platonic, '--platonic': platonic
     }
 
-    if sys.argv[1] in arguments.keys():
+    if sys.argv[1] in arguments:
         try:
             matrix = arguments.get(sys.argv[1])(int(sys.argv[2]))
         except (IndexError, ValueError):
