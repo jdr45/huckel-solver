@@ -84,7 +84,7 @@ def buckyball() -> np.ndarray:
     g = nx.Graph()
     g.add_edges_from(edges)
 
-    return nx.adjacency_matrix(g).todense()
+    return -nx.adjacency_matrix(g).todense()
 
 
 def get_eigenvalues_with_degeneracies(evals: Iterable[float]) -> List[Tuple[float, int]]:
